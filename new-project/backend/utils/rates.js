@@ -1,10 +1,11 @@
 const https = require('https');
 
-// pax-gold (PAXG) tracks 1 troy oz of gold. Divide by 31.1035 to get per-gram INR rate.
 const GOLD_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=inr';
 const TROY_OZ_TO_GRAM = 31.1035;
-// Gold-silver ratio (~80) is used to derive silver per-gram from gold per-gram.
 const GOLD_SILVER_RATIO = 80;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+let cache = { gold_rate: 0, silver_rate: 0, fetchedAt: 0 };
 
 const fetchJson = (url) => new Promise((resolve, reject) => {
   const req = https.get(url, (res) => {
@@ -19,6 +20,11 @@ const fetchJson = (url) => new Promise((resolve, reject) => {
 });
 
 async function fetchLiveRates() {
+  // Return cached value if still fresh
+  if (cache.gold_rate > 0 && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
+    return { gold_rate: cache.gold_rate, silver_rate: cache.silver_rate };
+  }
+
   try {
     const fetcher = globalThis.fetch
       ? (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
@@ -26,9 +32,13 @@ async function fetchLiveRates() {
 
     const data = await fetcher(GOLD_URL);
     const goldPerGram = Math.round(Number(data['pax-gold']?.inr || 0) / TROY_OZ_TO_GRAM);
-    const silverPerGram = Math.round(goldPerGram / GOLD_SILVER_RATIO);
-    return { gold_rate: goldPerGram, silver_rate: silverPerGram };
+    if (goldPerGram > 0) {
+      cache = { gold_rate: goldPerGram, silver_rate: Math.round(goldPerGram / GOLD_SILVER_RATIO), fetchedAt: Date.now() };
+    }
+    return { gold_rate: cache.gold_rate, silver_rate: cache.silver_rate };
   } catch (error) {
+    // Return last known good cache even if expired, rather than 0
+    if (cache.gold_rate > 0) return { gold_rate: cache.gold_rate, silver_rate: cache.silver_rate };
     return { gold_rate: 0, silver_rate: 0, error: error.message };
   }
 }
