@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goldsmith-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: goldsmith-backend
+  template:
+    metadata:
+      labels:
+        app: goldsmith-backend
+    spec:
+      containers:
+        - name: goldsmith-backend
+          image: mugesh202006/goldsmith-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: DB_HOST
+              value: goldsmith-db
+            - name: DB_USER
+              value: root
+            - name: DB_NAME
+              value: goldsmith_db
+            - name: JWT_EXPIRES_IN
+              value: "99999d"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: goldsmith-secrets
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: goldsmith-secrets
+                  key: JWT_SECRET
+
+  

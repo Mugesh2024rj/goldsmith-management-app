@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goldsmith-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: goldsmith-frontend
+  template:
+    metadata:
+      labels:
+        app: goldsmith-frontend
+    spec:
+      containers:
+        - name: goldsmith-frontend
+          image: mugesh202006/goldsmith-frontend:latest
+          ports:
+            - containerPort: 80
+

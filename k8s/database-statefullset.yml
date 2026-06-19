@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: goldsmith-db
+spec:
+  serviceName: goldsmith-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goldsmith-db
+  template:
+    metadata:
+      labels:
+        app: goldsmith-db
+    spec:
+      containers:
+        - name: goldsmith-db
+          image: mugesh202006/goldsmith-db:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: goldsmith-secrets
+                  key: DB_PASSWORD
+            - name: MYSQL_DATABASE
+              value: goldsmith_db
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: db-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
