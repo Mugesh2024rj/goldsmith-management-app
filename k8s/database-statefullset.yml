@@ -16,7 +16,7 @@ spec:
       containers:
         - name: goldsmith-db
           image: mugesh202006/goldsmith-db:latest
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3306
           env:

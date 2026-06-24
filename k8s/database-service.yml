@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: goldsmith-db
 spec:
+  type: ClusterIP
   selector:
     app: goldsmith-db
   clusterIP: None
