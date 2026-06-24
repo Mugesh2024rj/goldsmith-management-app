@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: goldsmith-frontend
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: goldsmith-frontend
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30002
+
 
