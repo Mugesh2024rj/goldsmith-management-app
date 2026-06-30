@@ -16,10 +16,10 @@ spec:
                 name: goldsmith-backend
                 port:
                   number: 8080
-          - path: /
-            pathType: Prefix
+          - path: /()(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: goldsmith-frontend
-                port: 
+                port:
                   number: 80
